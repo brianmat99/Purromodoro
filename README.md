@@ -12,9 +12,13 @@ Purromodoro is fully sandboxed with no entitlements.
 Based on <a href="https://github.com/ivoronin/TomatoBar">TomatoBar</a> by Ilya Voronin.
 
 ## Installation
+Download the latest release from the <a href="https://github.com/brianmat99/Purromodoro/releases/latest/">Releases page</a>.
+
+After unzipping, remove the quarantine attribute before opening:
 ```
-brew install --cask purromodoro
+xattr -cr Purromodoro.app
 ```
+Then move it to `/Applications` and open it.
 
 ## Integration with other tools
 ### Event log
