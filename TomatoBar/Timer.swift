@@ -14,12 +14,12 @@ class TBTimer: ObservableObject {
 
     private var stateMachine = TBStateMachine(state: .idle)
     public let player = TBPlayer()
-    private var consecutiveWorkIntervals: Int = 0
     private var notificationCenter = TBNotificationCenter()
     private var finishTime: Date!
     private var timerFormatter = DateComponentsFormatter()
     @Published var timeLeftString: String = ""
     @Published var timer: DispatchSourceTimer?
+    @Published var consecutiveWorkIntervals: Int = 0
 
     init() {
         /*
@@ -177,18 +177,15 @@ class TBTimer: ObservableObject {
 
     private func onWorkStart(context _: TBStateMachine.Context) {
         TBStatusItem.shared.setIcon(name: .work)
-        player.playWindup()
-        player.startTicking()
+        player.playDing()
         startTimer(seconds: workIntervalLength * 60)
     }
 
     private func onWorkFinish(context _: TBStateMachine.Context) {
         consecutiveWorkIntervals += 1
-        player.playDing()
     }
 
     private func onWorkEnd(context _: TBStateMachine.Context) {
-        player.stopTicking()
     }
 
     private func onRestStart(context _: TBStateMachine.Context) {
@@ -200,6 +197,9 @@ class TBTimer: ObservableObject {
             length = longRestIntervalLength
             imgName = .longRest
             consecutiveWorkIntervals = 0
+            player.playPurr()
+        } else {
+            player.playMeow()
         }
         notificationCenter.send(
             title: NSLocalizedString("TBTimer.onRestStart.title", comment: "Time's up title"),

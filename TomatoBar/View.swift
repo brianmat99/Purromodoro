@@ -6,6 +6,14 @@ extension KeyboardShortcuts.Name {
     static let startStopTimer = Self("startStopTimer")
 }
 
+private let integerFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .none
+    formatter.allowsFloats = false
+    formatter.minimum = 0
+    return formatter
+}()
+
 private struct IntervalsView: View {
     @EnvironmentObject var timer: TBTimer
     private var minStr = NSLocalizedString("IntervalsView.min", comment: "min")
@@ -17,7 +25,11 @@ private struct IntervalsView: View {
                     Text(NSLocalizedString("IntervalsView.workIntervalLength.label",
                                            comment: "Work interval label"))
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.workIntervalLength))
+                    TextField("", value: $timer.workIntervalLength, formatter: integerFormatter)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 40)
+                        .multilineTextAlignment(.trailing)
+                    Text("min")
                 }
             }
             Stepper(value: $timer.shortRestIntervalLength, in: 1 ... 60) {
@@ -25,7 +37,11 @@ private struct IntervalsView: View {
                     Text(NSLocalizedString("IntervalsView.shortRestIntervalLength.label",
                                            comment: "Short rest interval label"))
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.shortRestIntervalLength))
+                    TextField("", value: $timer.shortRestIntervalLength, formatter: integerFormatter)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 40)
+                        .multilineTextAlignment(.trailing)
+                    Text("min")
                 }
             }
             Stepper(value: $timer.longRestIntervalLength, in: 1 ... 60) {
@@ -33,7 +49,11 @@ private struct IntervalsView: View {
                     Text(NSLocalizedString("IntervalsView.longRestIntervalLength.label",
                                            comment: "Long rest interval label"))
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.longRestIntervalLength))
+                    TextField("", value: $timer.longRestIntervalLength, formatter: integerFormatter)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 40)
+                        .multilineTextAlignment(.trailing)
+                    Text("min")
                 }
             }
             .help(NSLocalizedString("IntervalsView.longRestIntervalLength.help",
@@ -43,7 +63,10 @@ private struct IntervalsView: View {
                     Text(NSLocalizedString("IntervalsView.workIntervalsInSet.label",
                                            comment: "Work intervals in a set label"))
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("\(timer.workIntervalsInSet)")
+                    TextField("", value: $timer.workIntervalsInSet, formatter: integerFormatter)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 40)
+                        .multilineTextAlignment(.trailing)
                 }
             }
             .help(NSLocalizedString("IntervalsView.workIntervalsInSet.help",
@@ -111,15 +134,15 @@ private struct SoundsView: View {
 
     var body: some View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 4) {
-            Text(NSLocalizedString("SoundsView.isWindupEnabled.label",
-                                   comment: "Windup label"))
-            VolumeSlider(volume: $player.windupVolume)
-            Text(NSLocalizedString("SoundsView.isDingEnabled.label",
+            Text(NSLocalizedString("SoundsView.ding.label",
                                    comment: "Ding label"))
             VolumeSlider(volume: $player.dingVolume)
-            Text(NSLocalizedString("SoundsView.isTickingEnabled.label",
-                                   comment: "Ticking label"))
-            VolumeSlider(volume: $player.tickingVolume)
+            Text(NSLocalizedString("SoundsView.meow.label",
+                                   comment: "Meow label"))
+            VolumeSlider(volume: $player.meowVolume)
+            Text(NSLocalizedString("SoundsView.purr.label",
+                                   comment: "Purr label"))
+            VolumeSlider(volume: $player.purrVolume)
         }.padding(4)
         Spacer().frame(minHeight: 0)
     }
@@ -161,6 +184,13 @@ struct TBPopoverView: View {
             .controlSize(.large)
             .keyboardShortcut(.defaultAction)
 
+            if timer.timer != nil || timer.consecutiveWorkIntervals > 0 {
+                Text("\(timer.consecutiveWorkIntervals)/\(timer.workIntervalsInSet) pomodoros")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+            }
+
             Picker("", selection: $activeChildView) {
                 Text(NSLocalizedString("TBPopoverView.intervals.label",
                                        comment: "Intervals label")).tag(ChildView.intervals)
@@ -185,17 +215,6 @@ struct TBPopoverView: View {
             }
 
             Group {
-                Button {
-                    NSApp.activate(ignoringOtherApps: true)
-                    NSApp.orderFrontStandardAboutPanel()
-                } label: {
-                    Text(NSLocalizedString("TBPopoverView.about.label",
-                                           comment: "About label"))
-                    Spacer()
-                    Text("⌘ A").foregroundColor(Color.gray)
-                }
-                .buttonStyle(.plain)
-                .keyboardShortcut("a")
                 Button {
                     NSApplication.shared.terminate(self)
                 } label: {

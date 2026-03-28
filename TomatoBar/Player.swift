@@ -2,23 +2,23 @@ import AVFoundation
 import SwiftUI
 
 class TBPlayer: ObservableObject {
-    private var windupSound: AVAudioPlayer
     private var dingSound: AVAudioPlayer
-    private var tickingSound: AVAudioPlayer
+    private var meowSound: AVAudioPlayer
+    private var purrSound: AVAudioPlayer
 
-    @AppStorage("windupVolume") var windupVolume: Double = 1.0 {
-        didSet {
-            setVolume(windupSound, windupVolume)
-        }
-    }
     @AppStorage("dingVolume") var dingVolume: Double = 1.0 {
         didSet {
             setVolume(dingSound, dingVolume)
         }
     }
-    @AppStorage("tickingVolume") var tickingVolume: Double = 1.0 {
+    @AppStorage("meowVolume") var meowVolume: Double = 1.0 {
         didSet {
-            setVolume(tickingSound, tickingVolume)
+            setVolume(meowSound, meowVolume)
+        }
+    }
+    @AppStorage("purrVolume") var purrVolume: Double = 1.0 {
+        didSet {
+            setVolume(purrSound, purrVolume)
         }
     }
 
@@ -27,42 +27,37 @@ class TBPlayer: ObservableObject {
     }
 
     init() {
-        let windupSoundAsset = NSDataAsset(name: "windup")
         let dingSoundAsset = NSDataAsset(name: "ding")
-        let tickingSoundAsset = NSDataAsset(name: "ticking")
+        let meowSoundAsset = NSDataAsset(name: "meow")
+        let purrSoundAsset = NSDataAsset(name: "purr")
 
         let wav = AVFileType.wav.rawValue
         do {
-            windupSound = try AVAudioPlayer(data: windupSoundAsset!.data, fileTypeHint: wav)
             dingSound = try AVAudioPlayer(data: dingSoundAsset!.data, fileTypeHint: wav)
-            tickingSound = try AVAudioPlayer(data: tickingSoundAsset!.data, fileTypeHint: wav)
+            meowSound = try AVAudioPlayer(data: meowSoundAsset!.data, fileTypeHint: wav)
+            purrSound = try AVAudioPlayer(data: purrSoundAsset!.data, fileTypeHint: wav)
         } catch {
             fatalError("Error initializing players: \(error)")
         }
 
-        windupSound.prepareToPlay()
         dingSound.prepareToPlay()
-        tickingSound.numberOfLoops = -1
-        tickingSound.prepareToPlay()
+        meowSound.prepareToPlay()
+        purrSound.prepareToPlay()
 
-        setVolume(windupSound, windupVolume)
         setVolume(dingSound, dingVolume)
-        setVolume(tickingSound, tickingVolume)
-    }
-
-    func playWindup() {
-        windupSound.play()
+        setVolume(meowSound, meowVolume)
+        setVolume(purrSound, purrVolume)
     }
 
     func playDing() {
         dingSound.play()
     }
 
-    func startTicking() {
-        tickingSound.play()
+    func playMeow() {
+        meowSound.play()
     }
 
-    func stopTicking() {
-        tickingSound.stop()
+    func playPurr() {
+        purrSound.play()
     }
 }
