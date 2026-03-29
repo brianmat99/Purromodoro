@@ -9,8 +9,8 @@
 "SettingsView.stopAfterBreak.label" = "Stop after break";
 "SettingsView.showTimerInMenuBar.label" = "Show timer in menu bar";
 "SettingsView.launchAtLogin.label" = "Launch at login";
-"SoundsView.ding.label" = "Ding (work start)";
-"SoundsView.meow.label" = "Meow (short break)";
+"SoundsView.meow.label" = "Meow (work start)";
+"SoundsView.ding.label" = "Ding (short break)";
 "SoundsView.purr.label" = "Purr (long break)";
 "TBPopoverView.start.label" = "Start";
 "TBPopoverView.stop.label" = "Stop";

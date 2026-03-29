@@ -20,6 +20,8 @@ class TBTimer: ObservableObject {
     @Published var timeLeftString: String = ""
     @Published var timer: DispatchSourceTimer?
     @Published var consecutiveWorkIntervals: Int = 0
+    @Published var isPaused: Bool = false
+    private var remainingSeconds: TimeInterval = 0
 
     init() {
         /*
@@ -119,6 +121,24 @@ class TBTimer: ObservableObject {
         stateMachine <-! .skipRest
     }
 
+    func togglePause() {
+        guard timer != nil else { return }
+        if isPaused {
+            // Resume: restart timer with remaining seconds
+            finishTime = Date().addingTimeInterval(remainingSeconds)
+            timer!.resume()
+            isPaused = false
+        } else {
+            // Pause: save remaining time and suspend timer
+            remainingSeconds = finishTime.timeIntervalSince(Date())
+            timer!.suspend()
+            isPaused = true
+            if showTimerInMenuBar {
+                TBStatusItem.shared.setTitle(title: timeLeftString + " ⏸")
+            }
+        }
+    }
+
     func updateTimeLeft() {
         timeLeftString = timerFormatter.string(from: Date(), to: finishTime)!
         if timer != nil, showTimerInMenuBar {
@@ -140,6 +160,10 @@ class TBTimer: ObservableObject {
     }
 
     private func stopTimer() {
+        if isPaused {
+            timer!.resume()
+            isPaused = false
+        }
         timer!.cancel()
         timer = nil
     }
@@ -177,7 +201,7 @@ class TBTimer: ObservableObject {
 
     private func onWorkStart(context _: TBStateMachine.Context) {
         TBStatusItem.shared.setIcon(name: .work)
-        player.playDing()
+        player.playMeow()
         startTimer(seconds: workIntervalLength * 60)
     }
 
@@ -199,7 +223,7 @@ class TBTimer: ObservableObject {
             consecutiveWorkIntervals = 0
             player.playPurr()
         } else {
-            player.playMeow()
+            player.playDing()
         }
         notificationCenter.send(
             title: NSLocalizedString("TBTimer.onRestStart.title", comment: "Time's up title"),
