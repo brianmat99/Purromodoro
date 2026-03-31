@@ -9,8 +9,8 @@
 "SettingsView.stopAfterBreak.label" = "휴식 후 중지";
 "SettingsView.showTimerInMenuBar.label" = "메뉴 막대에서 타이머 보기";
 "SettingsView.launchAtLogin.label" = "로그인 후 실행";
-"SoundsView.ding.label" = "딩 (작업 시작)";
-"SoundsView.meow.label" = "야옹 (짧은 휴식)";
+"SoundsView.meow.label" = "야옹 (작업 시작)";
+"SoundsView.ding.label" = "딩 (짧은 휴식)";
 "SoundsView.purr.label" = "그르릉 (긴 휴식)";
 "TBPopoverView.start.label" = "시작";
 "TBPopoverView.stop.label" = "중지";
@@ -25,3 +25,6 @@
 "TBTimer.onRestStart.skip.title" = "건너뛰기";
 "TBTimer.onRestFinish.title" = "휴식 시간 종료!";
 "TBTimer.onRestFinish.body" = "다시 일하자, 냥이 — 집중 모드!";
+"StatusGIFView.tagline.work" = "집중하라냥! 🐾";
+"StatusGIFView.tagline.shortRest" = "잠깐 쉬어가자냥! ☕🐟";
+"StatusGIFView.tagline.longRest" = "낮잠 시간이다냥! 💤";

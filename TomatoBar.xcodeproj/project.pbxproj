@@ -19,6 +19,9 @@
 		8AA5B3EB281295DB00BE1A6C /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 8AA5B3EA281295DB00BE1A6C /* KeyboardShortcuts */; };
 		8AA5B3F22812A74600BE1A6C /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AA5B3F12812A74600BE1A6C /* Notifications.swift */; };
 		8AEE49AF2AA75A5E00243D2F /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AEE49AE2AA75A5E00243D2F /* Log.swift */; };
+		AA00000127EE00000009E5D1 /* cat_work.gif in Resources */ = {isa = PBXBuildFile; fileRef = AA00000027EE00000009E5D1 /* cat_work.gif */; };
+		AA00000327EE00000009E5D2 /* cat_short_rest.gif in Resources */ = {isa = PBXBuildFile; fileRef = AA00000227EE00000009E5D2 /* cat_short_rest.gif */; };
+		AA00000527EE00000009E5D3 /* cat_long_rest.gif in Resources */ = {isa = PBXBuildFile; fileRef = AA00000427EE00000009E5D3 /* cat_long_rest.gif */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +38,9 @@
 		8AA5B3F12812A74600BE1A6C /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		8AEE49AE2AA75A5E00243D2F /* Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		C4C8DE0E2930DBB4003B1110 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		AA00000027EE00000009E5D1 /* cat_work.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = cat_work.gif; sourceTree = "<group>"; };
+		AA00000227EE00000009E5D2 /* cat_short_rest.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = cat_short_rest.gif; sourceTree = "<group>"; };
+		AA00000427EE00000009E5D3 /* cat_long_rest.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = cat_long_rest.gif; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +87,9 @@
 				8A21B78F27EE31A30009E5DB /* Assets.xcassets */,
 				8A21B79427EE31A30009E5DB /* TomatoBar.entitlements */,
 				8AA54347293094AB002A47FC /* Localizable.strings */,
+				AA00000027EE00000009E5D1 /* cat_work.gif */,
+				AA00000227EE00000009E5D2 /* cat_short_rest.gif */,
+				AA00000427EE00000009E5D3 /* cat_long_rest.gif */,
 			);
 			path = TomatoBar;
 			sourceTree = "<group>";
@@ -165,6 +174,9 @@
 			files = (
 				8A21B79027EE31A30009E5DB /* Assets.xcassets in Resources */,
 				8AA5434A2930F008002A47FC /* Localizable.strings in Resources */,
+				AA00000127EE00000009E5D1 /* cat_work.gif in Resources */,
+				AA00000327EE00000009E5D2 /* cat_short_rest.gif in Resources */,
+				AA00000527EE00000009E5D3 /* cat_long_rest.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

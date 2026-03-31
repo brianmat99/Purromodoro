@@ -20,6 +20,11 @@ class TBTimer: ObservableObject {
     @Published var timeLeftString: String = ""
     @Published var timer: DispatchSourceTimer?
     @Published var consecutiveWorkIntervals: Int = 0
+    @Published var isPaused: Bool = false
+    @Published var currentIntervalName: String = ""
+    @Published var dailyCompletedCount: Int = 0
+    private var remainingSeconds: TimeInterval = 0
+    private var isLongRest: Bool = false
 
     init() {
         /*
@@ -54,6 +59,7 @@ class TBTimer: ObservableObject {
             !self.stopAfterBreak
         }
         stateMachine.addRoutes(event: .skipRest, transitions: [.rest => .work])
+        stateMachine.addRoutes(event: .skipWork, transitions: [.work => .rest])
 
         /*
          * "Finish" handlers are called when time interval ended
@@ -83,6 +89,8 @@ class TBTimer: ObservableObject {
                             andSelector: #selector(handleGetURLEvent(_:withReplyEvent:)),
                             forEventClass: AEEventClass(kInternetEventClass),
                             andEventID: AEEventID(kAEGetURL))
+
+        loadDailyCount()
     }
 
     @objc func handleGetURLEvent(_ event: NSAppleEventDescriptor,
@@ -119,6 +127,60 @@ class TBTimer: ObservableObject {
         stateMachine <-! .skipRest
     }
 
+    func skipWork() {
+        stateMachine <-! .skipWork
+    }
+
+    func skipCurrentInterval() {
+        if isPaused {
+            timer?.resume()
+            isPaused = false
+        }
+        if stateMachine.state == .work {
+            skipWork()
+        } else if stateMachine.state == .rest {
+            skipRest()
+        }
+    }
+
+    var isRunning: Bool {
+        timer != nil
+    }
+
+    var canSkip: Bool {
+        stateMachine.state == .work || stateMachine.state == .rest
+    }
+
+    func togglePause() {
+        guard timer != nil else { return }
+        if isPaused {
+            // Resume: restart timer with remaining seconds
+            finishTime = Date().addingTimeInterval(remainingSeconds)
+            timer!.resume()
+            isPaused = false
+            // Restore the interval icon
+            switch currentIntervalName {
+            case "Work":
+                TBStatusItem.shared.setIcon(name: .work)
+            case "Short Rest":
+                TBStatusItem.shared.setIcon(name: .shortRest)
+            case "Long Rest":
+                TBStatusItem.shared.setIcon(name: .longRest)
+            default:
+                break
+            }
+        } else {
+            // Pause: save remaining time and suspend timer
+            remainingSeconds = finishTime.timeIntervalSince(Date())
+            timer!.suspend()
+            isPaused = true
+            TBStatusItem.shared.setIcon(name: .paused)
+            if showTimerInMenuBar {
+                TBStatusItem.shared.setTitle(title: timeLeftString)
+            }
+        }
+    }
+
     func updateTimeLeft() {
         timeLeftString = timerFormatter.string(from: Date(), to: finishTime)!
         if timer != nil, showTimerInMenuBar {
@@ -140,6 +202,10 @@ class TBTimer: ObservableObject {
     }
 
     private func stopTimer() {
+        if isPaused {
+            timer!.resume()
+            isPaused = false
+        }
         timer!.cancel()
         timer = nil
     }
@@ -177,12 +243,14 @@ class TBTimer: ObservableObject {
 
     private func onWorkStart(context _: TBStateMachine.Context) {
         TBStatusItem.shared.setIcon(name: .work)
-        player.playDing()
+        currentIntervalName = "Work"
+        player.playMeow()
         startTimer(seconds: workIntervalLength * 60)
     }
 
     private func onWorkFinish(context _: TBStateMachine.Context) {
         consecutiveWorkIntervals += 1
+        incrementDailyCount()
     }
 
     private func onWorkEnd(context _: TBStateMachine.Context) {
@@ -197,9 +265,13 @@ class TBTimer: ObservableObject {
             length = longRestIntervalLength
             imgName = .longRest
             consecutiveWorkIntervals = 0
+            isLongRest = true
+            currentIntervalName = "Long Rest"
             player.playPurr()
         } else {
-            player.playMeow()
+            isLongRest = false
+            currentIntervalName = "Short Rest"
+            player.playDing()
         }
         notificationCenter.send(
             title: NSLocalizedString("TBTimer.onRestStart.title", comment: "Time's up title"),
@@ -211,9 +283,6 @@ class TBTimer: ObservableObject {
     }
 
     private func onRestFinish(context ctx: TBStateMachine.Context) {
-        if ctx.event == .skipRest {
-            return
-        }
         notificationCenter.send(
             title: NSLocalizedString("TBTimer.onRestFinish.title", comment: "Break is over title"),
             body: NSLocalizedString("TBTimer.onRestFinish.body", comment: "Break is over body"),
@@ -224,6 +293,29 @@ class TBTimer: ObservableObject {
     private func onIdleStart(context _: TBStateMachine.Context) {
         stopTimer()
         TBStatusItem.shared.setIcon(name: .idle)
+        currentIntervalName = ""
         consecutiveWorkIntervals = 0
+    }
+
+    private func incrementDailyCount() {
+        let today = Calendar.current.startOfDay(for: Date())
+        let lastDate = UserDefaults.standard.object(forKey: "dailyCountDate") as? Date ?? .distantPast
+        if Calendar.current.isDate(today, inSameDayAs: lastDate) {
+            dailyCompletedCount = UserDefaults.standard.integer(forKey: "dailyCompletedCount") + 1
+        } else {
+            dailyCompletedCount = 1
+        }
+        UserDefaults.standard.set(dailyCompletedCount, forKey: "dailyCompletedCount")
+        UserDefaults.standard.set(today, forKey: "dailyCountDate")
+    }
+
+    func loadDailyCount() {
+        let today = Calendar.current.startOfDay(for: Date())
+        let lastDate = UserDefaults.standard.object(forKey: "dailyCountDate") as? Date ?? .distantPast
+        if Calendar.current.isDate(today, inSameDayAs: lastDate) {
+            dailyCompletedCount = UserDefaults.standard.integer(forKey: "dailyCompletedCount")
+        } else {
+            dailyCompletedCount = 0
+        }
     }
 }

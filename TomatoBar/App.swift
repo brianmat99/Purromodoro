@@ -6,6 +6,7 @@ extension NSImage.Name {
     static let work = Self("BarIconWork")
     static let shortRest = Self("BarIconShortRest")
     static let longRest = Self("BarIconLongRest")
+    static let paused = Self("BarIconPaused")
 }
 
 private let digitFont = NSFont.monospacedDigitSystemFont(ofSize: 0, weight: .regular)

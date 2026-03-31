@@ -1,9 +1,97 @@
+import AppKit
 import KeyboardShortcuts
 import LaunchAtLogin
 import SwiftUI
 
 extension KeyboardShortcuts.Name {
     static let startStopTimer = Self("startStopTimer")
+}
+
+private struct AnimatedGIFView: NSViewRepresentable {
+    let gifName: String
+
+    func makeNSView(context: Context) -> NSView {
+        let container = NSView()
+        let imageView = NSImageView()
+        imageView.canDrawSubviewsIntoLayer = true
+        imageView.imageScaling = .scaleProportionallyDown
+        imageView.animates = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(imageView)
+        NSLayoutConstraint.activate([
+            imageView.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            imageView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            imageView.widthAnchor.constraint(equalTo: container.widthAnchor),
+            imageView.heightAnchor.constraint(equalTo: container.heightAnchor),
+        ])
+        loadGIF(into: imageView)
+        return container
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        if let imageView = nsView.subviews.first as? NSImageView {
+            loadGIF(into: imageView)
+        }
+    }
+
+    private func loadGIF(into imageView: NSImageView) {
+        if let url = Bundle.main.url(forResource: gifName, withExtension: "gif"),
+           let image = NSImage(contentsOf: url) {
+            imageView.image = image
+            imageView.animates = true
+        }
+    }
+}
+
+private struct StatusGIFView: View {
+    let intervalName: String
+    let isPaused: Bool
+
+    private var gifName: String {
+        switch intervalName {
+        case "Work": return "cat_work"
+        case "Short Rest": return "cat_short_rest"
+        case "Long Rest": return "cat_long_rest"
+        default: return "cat_work"
+        }
+    }
+
+    private var tagline: String {
+        switch intervalName {
+        case "Work": return NSLocalizedString("StatusGIFView.tagline.work", comment: "Work tagline")
+        case "Short Rest": return NSLocalizedString("StatusGIFView.tagline.shortRest", comment: "Short rest tagline")
+        case "Long Rest": return NSLocalizedString("StatusGIFView.tagline.longRest", comment: "Long rest tagline")
+        default: return ""
+        }
+    }
+
+    private var hasGIF: Bool {
+        Bundle.main.url(forResource: gifName, withExtension: "gif") != nil
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text(tagline)
+                .font(.system(.callout, design: .rounded))
+                .fontWeight(.medium)
+                .padding(.bottom, -4)
+            if hasGIF {
+                AnimatedGIFView(gifName: gifName)
+                    .frame(width: 112, height: 112)
+                    .clipped()
+                    .opacity(isPaused ? 0.5 : 1.0)
+            }
+            if isPaused {
+                Text("(Paused)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else {
+                Text("(Paused)")
+                    .font(.caption)
+                    .hidden()
+            }
+        }
+    }
 }
 
 private let integerFormatter: NumberFormatter = {
@@ -134,12 +222,12 @@ private struct SoundsView: View {
 
     var body: some View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 4) {
-            Text(NSLocalizedString("SoundsView.ding.label",
-                                   comment: "Ding label"))
-            VolumeSlider(volume: $player.dingVolume)
             Text(NSLocalizedString("SoundsView.meow.label",
                                    comment: "Meow label"))
             VolumeSlider(volume: $player.meowVolume)
+            Text(NSLocalizedString("SoundsView.ding.label",
+                                   comment: "Ding label"))
+            VolumeSlider(volume: $player.dingVolume)
             Text(NSLocalizedString("SoundsView.purr.label",
                                    comment: "Purr label"))
             VolumeSlider(volume: $player.purrVolume)
@@ -156,36 +244,104 @@ struct TBPopoverView: View {
     @ObservedObject var timer = TBTimer()
     @State private var buttonHovered = false
     @State private var activeChildView = ChildView.intervals
+    @State private var holdProgress: CGFloat = 0
+    @State private var isHolding = false
 
     private var startLabel = NSLocalizedString("TBPopoverView.start.label", comment: "Start label")
     private var stopLabel = NSLocalizedString("TBPopoverView.stop.label", comment: "Stop label")
 
+    private let holdDuration: TimeInterval = 1.0
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button {
-                timer.startStop()
-                TBStatusItem.shared.closePopover(nil)
-            } label: {
-                Text(timer.timer != nil ?
-                     (buttonHovered ? stopLabel : timer.timeLeftString) :
-                        startLabel)
-                    /*
-                      When appearance is set to "Dark" and accent color is set to "Graphite"
-                      "defaultAction" button label's color is set to the same color as the
-                      button, making the button look blank. #24
-                     */
-                    .foregroundColor(Color.white)
-                    .font(.system(.body).monospacedDigit())
+            if timer.timer != nil {
+                StatusGIFView(intervalName: timer.currentIntervalName, isPaused: timer.isPaused)
                     .frame(maxWidth: .infinity)
             }
-            .onHover { over in
-                buttonHovered = over
+
+            HStack(spacing: 8) {
+                if timer.timer != nil {
+                    Button {
+                        timer.togglePause()
+                    } label: {
+                        Image(systemName: timer.isPaused ? "play.fill" : "pause.fill")
+                            .foregroundColor(Color.white)
+                            .frame(width: 20)
+                    }
+                    .controlSize(.large)
+                }
+                if timer.canSkip {
+                    Button {
+                        timer.skipCurrentInterval()
+                    } label: {
+                        Image(systemName: "forward.fill")
+                            .foregroundColor(Color.white)
+                            .frame(width: 20)
+                    }
+                    .controlSize(.large)
+                    .help("Skip \(timer.currentIntervalName)")
+                }
+                if timer.timer != nil {
+                    // Hold-to-stop button with progress overlay
+                    ZStack(alignment: .leading) {
+                        // Progress fill
+                        GeometryReader { geo in
+                            Rectangle()
+                                .fill(Color.red.opacity(0.3))
+                                .frame(width: geo.size.width * holdProgress)
+                        }
+                        .cornerRadius(6)
+
+                        Text("Hold to Stop")
+                            .foregroundColor(Color.white)
+                            .font(.system(.body).monospacedDigit())
+                            .frame(maxWidth: .infinity)
+                    }
+                    .frame(height: 28)
+                    .background(Color.accentColor)
+                    .cornerRadius(6)
+                    .controlSize(.large)
+                    .onHover { over in
+                        buttonHovered = over
+                    }
+                    .onLongPressGesture(minimumDuration: holdDuration, perform: {
+                        // Hold completed — stop the timer
+                        withAnimation(.none) {
+                            holdProgress = 0
+                            isHolding = false
+                        }
+                        timer.startStop()
+                        TBStatusItem.shared.closePopover(nil)
+                    }, onPressingChanged: { pressing in
+                        if pressing {
+                            isHolding = true
+                            withAnimation(.linear(duration: holdDuration)) {
+                                holdProgress = 1.0
+                            }
+                        } else {
+                            isHolding = false
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                holdProgress = 0
+                            }
+                        }
+                    })
+                } else {
+                    Button {
+                        timer.startStop()
+                        TBStatusItem.shared.closePopover(nil)
+                    } label: {
+                        Text(startLabel)
+                            .foregroundColor(Color.white)
+                            .font(.system(.body).monospacedDigit())
+                            .frame(maxWidth: .infinity)
+                    }
+                    .controlSize(.large)
+                    .keyboardShortcut(.defaultAction)
+                }
             }
-            .controlSize(.large)
-            .keyboardShortcut(.defaultAction)
 
             if timer.timer != nil || timer.consecutiveWorkIntervals > 0 {
-                Text("\(timer.consecutiveWorkIntervals)/\(timer.workIntervalsInSet) pomodoros")
+                Text("\(timer.consecutiveWorkIntervals)/\(timer.workIntervalsInSet) work intervals until long rest")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity)
@@ -215,6 +371,12 @@ struct TBPopoverView: View {
             }
 
             Group {
+                if timer.dailyCompletedCount > 0 {
+                    Text("Purromodoro count today: \(timer.dailyCompletedCount)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity)
+                }
                 Button {
                     NSApplication.shared.terminate(self)
                 } label: {

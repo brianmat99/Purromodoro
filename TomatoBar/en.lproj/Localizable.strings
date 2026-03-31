@@ -9,8 +9,8 @@
 "SettingsView.stopAfterBreak.label" = "Stop after break";
 "SettingsView.showTimerInMenuBar.label" = "Show timer in menu bar";
 "SettingsView.launchAtLogin.label" = "Launch at login";
-"SoundsView.ding.label" = "Ding (work start)";
-"SoundsView.meow.label" = "Meow (short break)";
+"SoundsView.meow.label" = "Meow (work start)";
+"SoundsView.ding.label" = "Ding (short break)";
 "SoundsView.purr.label" = "Purr (long break)";
 "TBPopoverView.start.label" = "Start";
 "TBPopoverView.stop.label" = "Stop";
@@ -25,3 +25,6 @@
 "TBTimer.onRestStart.skip.title" = "Skip";
 "TBTimer.onRestFinish.title" = "Break is over!";
 "TBTimer.onRestFinish.body" = "Back to work, kitty — stay pawductive!";
+"StatusGIFView.tagline.work" = "Stay pawductive! 🐾";
+"StatusGIFView.tagline.shortRest" = "Paws for a moment! ☕🐟";
+"StatusGIFView.tagline.longRest" = "You've earned a cat nap! 💤";
