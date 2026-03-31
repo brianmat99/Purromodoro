@@ -25,3 +25,6 @@
 "TBTimer.onRestStart.skip.title" = "Skip";
 "TBTimer.onRestFinish.title" = "Break is over!";
 "TBTimer.onRestFinish.body" = "Back to work, kitty — stay pawductive!";
+"StatusGIFView.tagline.work" = "Stay pawductive! 🐾";
+"StatusGIFView.tagline.shortRest" = "Paws for a moment! ☕🐟";
+"StatusGIFView.tagline.longRest" = "You've earned a cat nap! 💤";

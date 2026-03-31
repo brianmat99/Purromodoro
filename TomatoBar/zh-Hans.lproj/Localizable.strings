@@ -25,3 +25,6 @@
 "TBTimer.onRestStart.skip.title" = "跳过";
 "TBTimer.onRestFinish.title" = "休息结束!";
 "TBTimer.onRestFinish.body" = "回去干活吧小猫咪 — 保持爪力!";
+"StatusGIFView.tagline.work" = "保持爪力! 🐾";
+"StatusGIFView.tagline.shortRest" = "歇一下吧喵! ☕🐟";
+"StatusGIFView.tagline.longRest" = "你值得一次猫咪午睡! 💤";
